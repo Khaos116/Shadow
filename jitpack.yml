@@ -1,7 +1,11 @@
 jdk:
   - openjdk17
+
 before_install:
   - chmod +x gradlew
+  # 强制安装 Shadow 报错要求的 SDK 版本
+  - yes | sdkmanager "platforms;android-33"
+
 install:
-  # 关键：添加 JITPACK=true 触发精简逻辑，并添加 -x test 跳过测试
+  # 保持原样，这行逻辑没问题
   - JITPACK=true ./gradlew publishToMavenLocal -Pgroup=com.github.khaos -x test
