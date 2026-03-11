@@ -1,13 +1,17 @@
-includeBuild '../coding'
+// 只有在非 JitPack 环境下才引入 coding 辅助模块
+if (System.getenv("JITPACK") != "true") {
+  includeBuild '../coding'
+}
+
 include 'loader',
-        'runtime',
-        'activity-container',
-        'transform',
-        'gradle-plugin',
-        'common',
-        'manager',
-        'manager-db-test',
-        'manifest-parser',
-        'load-parameters',
-        'transform-kit',
-        'utils'
+    'runtime',
+    'activity-container',
+    'transform',
+    'gradle-plugin',
+    'common',
+    'manager',
+    'manager-db-test',
+    'manifest-parser',
+    'load-parameters',
+    'transform-kit',
+    'utils'
