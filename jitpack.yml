@@ -1,0 +1,7 @@
+jdk:
+  - openjdk17
+before_install:
+  - chmod +x gradlew
+install:
+  # 关键：添加 JITPACK=true 触发精简逻辑，并添加 -x test 跳过测试
+  - JITPACK=true ./gradlew publishToMavenLocal -Pgroup=com.github.khaos -x test

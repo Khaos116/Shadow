@@ -1,0 +1,39 @@
+apply plugin: 'maven-publish'
+
+afterEvaluate {
+  publishing {
+    publications {
+      mavenJava(MavenPublication) {
+        // 1. 设置坐标
+        groupId = 'com.github.khaos'
+        artifactId = project.name
+
+        // 2. 动态日期版本号
+        def baseVersion = rootProject.hasProperty('VERSION_NAME') ? rootProject.VERSION_NAME : '2.3.0'
+        version = "${baseVersion}.${new Date().format('yyMMdd')}"
+
+        // 3. 智能判断发布组件
+        if (project.plugins.hasPlugin('com.android.library')) {
+          // 如果是 Android Library
+          from components.release
+        } else if (project.plugins.hasPlugin('java')) {
+          // 如果是纯 Java/Kotlin 模块 (比如 shadow-common)
+          from components.java
+        }
+
+        // 4. 这里的配置可以防止 POM 文件丢失依赖
+        pom.withXml {
+          def dependenciesNode = asNode().appendNode('dependencies')
+          configurations.implementation.allDependencies.each {
+            if (it.group != null && it.name != null) {
+              def dependencyNode = dependenciesNode.appendNode('dependency')
+              dependencyNode.appendNode('groupId', it.group)
+              dependencyNode.appendNode('artifactId', it.name)
+              dependencyNode.appendNode('version', it.version)
+            }
+          }
+        }
+      }
+    }
+  }
+}
