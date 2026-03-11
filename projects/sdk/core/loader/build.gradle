@@ -1,5 +1,6 @@
 import com.tencent.shadow.coding.code_generator.ActivityCodeGenerator
 import com.tencent.shadow.coding.common_jar_settings.AndroidJar
+apply from: rootProject.file('../../../publish.gradle')
 
 buildscript {
     dependencies {

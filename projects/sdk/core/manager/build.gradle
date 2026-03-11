@@ -1,4 +1,5 @@
 apply plugin: 'com.tencent.shadow.internal.common-jar-settings'
+apply from: rootProject.file('../../../publish.gradle')
 
 dependencies {
     implementation project(':utils')

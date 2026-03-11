@@ -9,6 +9,7 @@
  */
 
 import com.tencent.shadow.coding.code_generator.ActivityCodeGenerator
+apply from: rootProject.file('../../../publish.gradle')
 
 buildscript {
     dependencies {
