@@ -9,3 +9,11 @@
 /captures
 .externalNativeBuild
 .gradletasknamecache
+/.idea/**
+projects/sample
+projects/test
+# 这一步会将文件夹从 Git 的追踪列表中移除，但保留你硬盘上的文件
+#git rm -r --cached projects/sample
+#git rm -r --cached projects/test
+#git rm -r --cached .idea/codeStyleConfig
+#git rm -r --cached .idea/Project
