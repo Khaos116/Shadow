@@ -57,20 +57,27 @@ def copyApkAfterTask(t) {
         def metadata = new org.json.JSONObject(metadataFile.text)
         def outputFile = metadata.getJSONArray("elements").getJSONObject(0).getString("outputFile")
         def apkFile = new File(metadataFile.parentFile, outputFile)
-        def testRelativePath = redirectFile.relativePath(apkFile)
-        def needCopy = !testRelativePath.matches("^(\\.\\.${File.separatorChar})+outputs${File.separatorChar}.+")
-        if (needCopy) {
-            def matchPath = new File("/build/intermediates").toPath().toString()
-            def intermediatesDir = new File(apkFile.toPath().normalize().toString().find("^.+?$matchPath"))
-            def outputsDir = new File(intermediatesDir.parentFile, "outputs")
-            def r = copy {
-                from intermediatesDir
-                into outputsDir
-                include 'apk/**'
-            }
-            if (r.didWork) {
-                getLogger().info("copy apk from ${intermediatesDir.path} to ${outputsDir.path}")
-            }
+        // 原实现用正则判断 apk 是否已经在 outputs 目录下、需要从 intermediates 搬运过去。
+        // 在 Windows 上 File.separator 是 '\'，拼进正则字符串会被当成转义符导致各种解析错误
+        // （分组未闭合 / 非法转义序列）。改成直接按路径分段判断是否存在 "intermediates" 目录，
+        // 不依赖任何分隔符相关的正则，Windows/Unix 都一样跑。
+        def segments = apkFile.toPath().normalize().collect { it.toString() }
+        def intermediatesIndex = segments.lastIndexOf("intermediates")
+        if (intermediatesIndex < 0) {
+            // 当前 AGP 版本已经直接把 apk 输出到 outputs 目录，不存在 issue #1263 描述的问题，无需搬运
+            return
+        }
+        def root = apkFile.toPath().normalize().root
+        def intermediatesRelative = segments[0..intermediatesIndex].join(File.separator)
+        def intermediatesDir = new File(root == null ? intermediatesRelative : root.toString() + intermediatesRelative)
+        def outputsDir = new File(intermediatesDir.parentFile, "outputs")
+        def r = copy {
+            from intermediatesDir
+            into outputsDir
+            include 'apk/**'
+        }
+        if (r.didWork) {
+            getLogger().info("copy apk from ${intermediatesDir.path} to ${outputsDir.path}")
         }
     }
 }
