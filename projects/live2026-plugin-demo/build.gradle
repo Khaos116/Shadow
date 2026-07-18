@@ -51,8 +51,11 @@ android {
         applicationId "com.wos.live"
         minSdkVersion MIN_SDK_VERSION
         targetSdkVersion TARGET_SDK_VERSION
-        versionCode VERSION_CODE
-        versionName VERSION_NAME
+        // 不用 Shadow 共享的 VERSION_CODE/VERSION_NAME（那两个是给 Shadow 自己模块用的，
+        // VERSION_NAME 固定是 "local"，没意义）。插件自己走三位版本号，
+        // versionCode 用 major*100+minor*10+patch 换算（1.0.0 -> 100）。
+        versionCode 100
+        versionName "1.0.0"
     }
 
     // 将插件applicationId设置为和宿主相同
@@ -76,4 +79,35 @@ dependencies {
     // Shadow Transform 后业务代码会引用 runtime 中的类，compileOnly 依赖，
     // 真正的实现由宿主在运行时提供，不要打进插件包里。
     pluginCompileOnly 'com.tencent.shadow.core:runtime'
+}
+
+// 编译成功后自动把 apk 拷贝到 <宿主项目根>/APK/plugin/，
+// 文件名带上"模块+Release/Debug+版本号+日期_时间"，跟宿主 app/build.gradle.kts 里的做法对应。
+def copyApkToOutputDir(String buildType) {
+    def apkName = "live2026-plugin-demo-plugin-${buildType}.apk"
+    def srcFile = file("build/outputs/apk/plugin/${buildType}/${apkName}")
+    if (!srcFile.exists()) {
+        return
+    }
+    def kind = buildType == 'release' ? 'Release' : 'Debug'
+    def timestamp = new Date().format('yyyyMMdd_HHmmss')
+    // rootProject 是 shadow/ 自己的根，宿主的 APK/ 目录在它上一级（E:\Work\LiveWos2027\APK）。
+    def destDir = file("${rootProject.projectDir}/../APK/plugin")
+    destDir.mkdirs()
+    def destFileName = "live2026-plugin-demo_${kind}_${android.defaultConfig.versionName}_${timestamp}.apk"
+    copy {
+        from srcFile
+        into destDir
+        rename { destFileName }
+    }
+    println "APK 已拷贝到: ${new File(destDir, destFileName).absolutePath}"
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name == 'assemblePluginDebug') {
+        task.doLast { copyApkToOutputDir('debug') }
+    }
+    if (task.name == 'assemblePluginRelease') {
+        task.doLast { copyApkToOutputDir('release') }
+    }
 }
