@@ -41,6 +41,37 @@ allprojects {
             }
         }
     }
+
+    // M0（Live2026 宿主壳项目）：临时本地发布配置。
+    // 宿主用当前最新 Gradle 9.4.1，composite build 直接接 Shadow 源码会因为
+    // coding:aar-to-jar-plugin 依赖的老 AGP 用到已被移除的 org.gradle.util.WrapUtil 而崩，
+    // 所以改成让 Shadow 用自己的 Gradle 7.5 把这些模块发布到本地 Maven 仓库，
+    // 宿主那边正常声明依赖坐标去消费，两边 Gradle 版本互不影响。
+    // 只对已经有 java 组件的子模块生效，没有 java 组件的子模块（比如纯测试模块）会被跳过。
+    // 用 afterEvaluate + 检查 components.findByName('java')，而不是 plugins.withId('java-library')：
+    // 后者的回调是在 common-jar-settings 插件内部调用 pluginManager.apply("java-library") 期间
+    // 同步触发的，这时候再往同一个 project 上 apply 'maven-publish' 会导致 publication 被
+    // 重复配置，报 "cannot include multiple components"。
+    version = '0.1.0-m0-local'
+    apply plugin: 'maven-publish'
+    afterEvaluate {
+        if (components.findByName('java') != null) {
+            publishing {
+                publications {
+                    maven(MavenPublication) {
+                        from components.java
+                        versionMapping {
+                            usage('java-api') { fromResolutionResult() }
+                            usage('java-runtime') { fromResolutionResult() }
+                        }
+                    }
+                }
+                repositories {
+                    mavenLocal()
+                }
+            }
+        }
+    }
 }
 
 tasks.create('test').dependsOn subprojects.collect { it.getTasksByName('test', false) }
