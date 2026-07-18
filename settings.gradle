@@ -11,6 +11,10 @@ includeTest()
 includeSample()
 includeSampleDynamicApk()
 
+// Live2026 M0 第七步：最小假插件，见 projects/live2026-plugin-demo/build.gradle 里的说明。
+include 'live2026-plugin-demo'
+project(':live2026-plugin-demo').projectDir = file('projects/live2026-plugin-demo')
+
 def includeTest() {
     include 'test-dynamic-host',
             'test-dynamic-manager',
