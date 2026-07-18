@@ -55,7 +55,14 @@ allprojects {
     version = '0.1.0-m0-local'
     apply plugin: 'maven-publish'
     afterEvaluate {
-        if (components.findByName('java') != null) {
+        // java-gradle-plugin（core:gradle-plugin 用了）会自己建一个 pluginMaven publication，
+        // 坐标跟这里要建的 maven 完全一样，两个一起注册会互相覆盖（Gradle 会告警）。
+        // 这种情况直接沿用它自带的，不再重复建。
+        // 注意：不能靠 publications.findByName('pluginMaven') 判断——那个 publication 是在
+        // java-gradle-plugin 自己的 afterEvaluate 里注册的，跟这个块的执行先后不确定；
+        // 判断插件有没有被 apply 才是稳定的。
+        def hasOwnPublication = pluginManager.hasPlugin('java-gradle-plugin')
+        if (components.findByName('java') != null && !hasOwnPublication) {
             publishing {
                 publications {
                     maven(MavenPublication) {
