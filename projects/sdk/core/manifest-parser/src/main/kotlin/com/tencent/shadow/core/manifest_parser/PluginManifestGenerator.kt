@@ -160,7 +160,27 @@ private class PluginManifestBuilder(
                 Modifier.FINAL,
             )
             .returns(fieldSpec.type)
-            .addStatement(CodeBlock.of("return ${fieldSpec.name}"))
+            .addStatement(
+                com.squareup.javapoet.CodeBlock.of(
+                    if (fieldSpec.name == "applicationPackageName") {
+                        "try {\n" +
+                        "     Class<?> aClass = Class.forName(\"android.app.ActivityThread\");\n" +
+                        "     java.lang.reflect.Method currentActivityThread = aClass.getDeclaredMethod(\"currentActivityThread\");\n" +
+                        "     currentActivityThread.setAccessible(true);\n" +
+                        "     Object thread = currentActivityThread.invoke(null);\n" +
+                        "     java.lang.reflect.Method getApplication = aClass.getDeclaredMethod(\"getApplication\");\n" +
+                        "     getApplication.setAccessible(true);\n" +
+                        "     android.app.Application app = (android.app.Application) getApplication.invoke(thread);\n" +
+                        "     return app.getPackageName();\n" +
+                        "} catch (Throwable t) {\n" +
+                        "     t.printStackTrace();\n" +
+                        "}\n" +
+                        "return ${fieldSpec.name}"
+                    } else {
+                        "return ${fieldSpec.name}"
+                    }
+                )
+            )
             .build()
 
     private fun buildResIdField(fieldName: String, key: String): FieldSpec {

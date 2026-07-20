@@ -194,17 +194,18 @@ abstract class ComponentManager : PluginComponentLauncher {
     fun addPluginApkInfo(
         pluginManifest: PluginManifest,
         loadParameters: LoadParameters,
-        archiveFilePath: String
+        archiveFilePath: String,
+        hostPackageName: String
     ) {
         fun common(componentInfo: PluginManifest.ComponentInfo, componentName: ComponentName) {
             packageNameMap[componentInfo.className] = componentName.packageName
             val previousValue = loadParametersMap.put(componentName, loadParameters)
             if (previousValue != null) {
-                throw IllegalStateException("重复添加Component：$componentName")
+                throw IllegalStateException("重复添加Component: $componentName")
             }
         }
 
-        val applicationPackageName = pluginManifest.applicationPackageName
+        val applicationPackageName = hostPackageName
         pluginManifest.activities?.forEach {
             val componentName = ComponentName(applicationPackageName, it.className)
             common(it, componentName)

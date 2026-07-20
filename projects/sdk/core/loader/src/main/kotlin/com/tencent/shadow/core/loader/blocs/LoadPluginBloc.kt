@@ -132,6 +132,7 @@ object LoadPluginBloc {
                         pluginManifest,
                         loadParameters,
                         installedApk.apkFilePath,
+                        hostAppContext.packageName
                     )
                     pluginPartsMap[loadParameters.partKey] = PluginParts(
                         appComponentFactory,

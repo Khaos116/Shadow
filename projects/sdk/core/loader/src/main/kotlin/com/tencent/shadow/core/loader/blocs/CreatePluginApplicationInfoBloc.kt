@@ -21,7 +21,8 @@ object CreatePluginApplicationInfoBloc {
         result.nativeLibraryDir = installedApk.libraryPath
         result.dataDir = makeDataDir(loadParameters, hostAppContext).absolutePath
 
-        result.packageName = pluginManifest.applicationPackageName
+        result.packageName = hostAppContext.packageName
+        android.util.Log.i("ShadowAppInfo", "CreatePluginApplicationInfoBloc set packageName to: " + result.packageName)
         result.className = pluginManifest.applicationClassName
         result.theme = pluginManifest.applicationTheme
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

@@ -228,7 +228,9 @@ public class ShadowContext extends SubDirContextThemeWrapper {
 
     @Override
     public String getPackageName() {
-        return mApplicationInfo.packageName;
+        String hostPackageName = getBaseContext().getPackageName();
+        android.util.Log.i("ShadowAppInfo", "ShadowContext.getPackageName returning host package: " + hostPackageName);
+        return hostPackageName;
     }
 
     @Override
