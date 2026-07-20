@@ -162,7 +162,7 @@ private class PluginManifestBuilder(
             .returns(fieldSpec.type)
             .addStatement(
                 com.squareup.javapoet.CodeBlock.of(
-                    if (fieldSpec.name == "applicationPackageName") {
+                     if (fieldSpec.name == "applicationPackageName") {
                         "try {\n" +
                         "     Class<?> aClass = Class.forName(\"android.app.ActivityThread\");\n" +
                         "     java.lang.reflect.Method currentActivityThread = aClass.getDeclaredMethod(\"currentActivityThread\");\n" +
@@ -170,8 +170,11 @@ private class PluginManifestBuilder(
                         "     Object thread = currentActivityThread.invoke(null);\n" +
                         "     java.lang.reflect.Method getApplication = aClass.getDeclaredMethod(\"getApplication\");\n" +
                         "     getApplication.setAccessible(true);\n" +
-                        "     android.app.Application app = (android.app.Application) getApplication.invoke(thread);\n" +
-                        "     return app.getPackageName();\n" +
+                        "     Object app = getApplication.invoke(thread);\n" +
+                        "     if (app != null) {\n" +
+                        "         java.lang.reflect.Method getPackageName = app.getClass().getMethod(\"getPackageName\");\n" +
+                        "         return (String) getPackageName.invoke(app);\n" +
+                        "     }\n" +
                         "} catch (Throwable t) {\n" +
                         "     t.printStackTrace();\n" +
                         "}\n" +
